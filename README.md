@@ -6,7 +6,7 @@ Public documentation only. The private application code and career data are main
 - Canonical privacy policy: https://career-agent.tmcsolutions-org.net/privacy/
 - Terms of service: https://career-agent.tmcsolutions-org.net/terms/
 - Policy source of truth: `privacy.md`
-- Publishing: Cloudflare Workers (static assets) from `main`, built by Workers Builds (settings below). The previous GitHub Pages copy at https://tmc-the-meredith-collective.github.io/career-agent-docs/ stays up until every registration (Google OAuth consent screen, LinkedIn app if any) points at the canonical domain; then it is retired.
+- Publishing: Cloudflare Workers (static assets) from `main`, built by Workers Builds (settings below). The previous GitHub Pages copy was retired on 2026-09-28 after the Google OAuth consent screen was verified against the canonical domain.
 
 ## Cloudflare Workers build settings
 
