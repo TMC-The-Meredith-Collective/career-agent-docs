@@ -6,3 +6,5 @@ markdown: kramdown
 exclude:
   - README.md
   - wrangler.jsonc
+  - Gemfile
+  - Gemfile.lock
