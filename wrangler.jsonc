@@ -1,0 +1,11 @@
+// Cloudflare Workers configuration for the public documentation site.
+// The site is a static Jekyll build served as Worker static assets; there is
+// no Worker script. Workers Builds runs the build command from the README,
+// then `npx wrangler deploy` uploads the assets directory below.
+{
+  "name": "career-agent-docs",
+  "compatibility_date": "2026-09-28",
+  "assets": {
+    "directory": "./_site"
+  }
+}
