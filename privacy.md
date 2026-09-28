@@ -6,7 +6,7 @@ permalink: /privacy/
 
 # JARVIS Career Agent Privacy Policy
 
-**Effective date:** September 15, 2026
+**Effective date:** September 27, 2026
 
 **Operator:** David Russell Meredith — The Meredith Collective
 
@@ -62,7 +62,8 @@ Outputs require human review. The reviewed tailoring route does not automaticall
 - **LinkedIn:** authentication, consent, and the identity response described above.
 - **Google:** authorized Gmail, Calendar, and Drive operations when enabled.
 - **Anthropic:** the AI processing described above when requested and configured.
-- **GitHub:** hosting this public documentation site. GitHub Pages logs visitors' IP addresses for security, as described in its [Pages documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages). This site contains public policy documentation, not private career records or application credentials.
+- **Cloudflare:** hosting this public documentation site on Cloudflare Pages. Cloudflare processes visitors' IP addresses and request metadata to deliver and protect the site, as described in its [privacy policy](https://www.cloudflare.com/privacypolicy/). This site contains public policy documentation, not private career records or application credentials.
+- **GitHub:** hosting the documentation source repository. Until the previous GitHub Pages copy of this site is retired, GitHub Pages also serves it and logs visitors' IP addresses for security, as described in its [Pages documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages).
 
 The operator does not sell personal information, use it for advertising, or provide it to data brokers. No additional provider is currently designated. Adding providers requires review of their data access, an updated notice, owner approval, and any required consent; this policy is not blanket authorization for unspecified future sharing.
 
