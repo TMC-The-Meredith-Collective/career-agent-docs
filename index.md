@@ -11,6 +11,6 @@ The application supports its owner's search for steady employment and income. It
 
 ## Privacy
 
-[Read the Privacy Policy]({{ '/privacy/' | relative_url }}).
+[Read the Privacy Policy]({{ '/privacy/' | relative_url }}) · [Read the Terms of Service]({{ '/terms/' | relative_url }}).
 
 For privacy questions, contact [administrative-agent@tmcsolutions-org.net](mailto:administrative-agent@tmcsolutions-org.net).

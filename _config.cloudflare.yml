@@ -1,0 +1,8 @@
+# Overrides used only by the Cloudflare Pages build:
+#   bundle exec jekyll build --config _config.yml,_config.cloudflare.yml
+# The site is served from the root of its own domain there, not /career-agent-docs.
+url: https://career-agent.tmcsolutions-org.net
+baseurl: ""
+# Copy Cloudflare's security-headers file into the build output.
+include:
+  - _headers
