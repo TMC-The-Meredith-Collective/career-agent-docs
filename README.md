@@ -19,7 +19,7 @@ The Worker is defined by `wrangler.jsonc` (name, static assets directory `_site`
 | Build command | `bundle install && bundle exec jekyll build --config _config.yml,_config.cloudflare.yml` |
 | Deploy command | `npx wrangler deploy` (default) |
 | Preview command | `npx wrangler preview` (default) |
-| Build variables | `RUBY_VERSION` = `3.2.2` and `LC_ALL` = `C.UTF-8` (without a UTF-8 locale Ruby defaults to US-ASCII and Sass fails on the theme stylesheet) |
+| Build variable | `LC_ALL` = `C.UTF-8` (without a UTF-8 locale Ruby defaults to US-ASCII and Sass fails on the theme stylesheet). Do not set `RUBY_VERSION`; the image's preinstalled Ruby 3.4 is used and the Gemfile adds the gems Jekyll 3 needs there. |
 | Custom domain | `career-agent.tmcsolutions-org.net` (Worker **Settings** > **Domains & Routes**) |
 
 `_headers` is copied into `_site` by `_config.cloudflare.yml` and supplies the security headers on every response.
