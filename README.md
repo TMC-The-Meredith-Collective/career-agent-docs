@@ -26,6 +26,14 @@ The Worker is defined by `wrangler.jsonc` (name, static assets directory `_site`
 
 Do not enable Cloudflare Web Analytics on this project. The privacy policy states that this site adds no analytics scripts.
 
+## Design
+
+The site uses the dark JARVIS look shared with the Career Command Center: `_layouts/default.html` plus `assets/css/site.css`. Long pages get a table of contents built from their `##` headings, and the bold-labelled lines under each title (effective date, operator, contact) render as a metadata strip, so page text never needs layout markup.
+
+- Fonts are self-hosted in `assets/fonts/` (Space Grotesk and DM Mono, Latin subsets, SIL Open Font License; license texts sit beside the files). Pages make no third-party requests, and `_headers` allows styles and fonts from this origin only (`style-src 'self'; font-src 'self'`). Do not add inline `<style>` blocks or `style` attributes; the policy blocks them.
+- The site loads no scripts.
+- Do not add the JARVIS agent portraits here. They are game art and stay in the private application only.
+
 ## Maintenance
 
 1. Review actual data flows before changing the policy. Describe unimplemented requirements as pending, not completed controls.
