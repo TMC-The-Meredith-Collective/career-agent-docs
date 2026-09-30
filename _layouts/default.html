@@ -3,32 +3,51 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#08070D">
     <meta name="description" content="{{ site.description | escape }}">
     <meta name="referrer" content="no-referrer">
     <title>{{ page.title | escape }}</title>
     <link rel="canonical" href="{{ page.url | absolute_url }}">
-    <style>
-      :root { color-scheme: light; font-family: system-ui, sans-serif; color: #24202d; background: #faf9fc; }
-      body { margin: 0; line-height: 1.7; }
-      header, main, footer { max-width: 52rem; margin: auto; padding: 1.5rem; }
-      header { border-bottom: 3px solid #76b900; }
-      header a { font-weight: 700; }
-      h1, h2 { line-height: 1.25; color: #241338; }
-      h1 { font-size: clamp(1.8rem, 5vw, 2.7rem); }
-      h2 { margin-top: 2.5rem; font-size: 1.35rem; }
-      a { color: #5923a8; text-underline-offset: .18em; overflow-wrap: anywhere; }
-      a:focus-visible { outline: 3px solid #5923a8; outline-offset: 4px; }
-      li { margin-bottom: .7rem; }
-      code { overflow-wrap: anywhere; }
-      footer { border-top: 1px solid #d8d1e1; font-size: .9rem; }
-      .skip { position: absolute; left: -9999px; }
-      .skip:focus { position: static; padding: 1rem; }
-    </style>
+    <link rel="icon" href="{{ '/favicon.svg' | relative_url }}" type="image/svg+xml">
+    <link rel="preload" href="{{ '/assets/fonts/space-grotesk-latin.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="{{ '/assets/css/site.css' | relative_url }}">
   </head>
   <body>
-    <a class="skip" href="#content">Skip to content</a>
-    <header><a href="{{ '/' | relative_url }}">JARVIS / Career Agent</a> · Public documentation</header>
-    <main id="content">{{ content }}</main>
-    <footer><a href="{{ '/privacy/' | relative_url }}">Privacy Policy</a> · <a href="{{ '/terms/' | relative_url }}">Terms of Service</a> · The Meredith Collective</footer>
+    <a class="skip-link" href="#content">Skip to content</a>
+    <header class="site-bar">
+      <a class="brand" href="{{ '/' | relative_url }}"{% if page.url == '/' %} aria-current="page"{% endif %}>
+        <svg class="brand-mark" viewBox="0 0 34 34" aria-hidden="true"><path class="brand-hex" d="M17 2 30 9.5v15L17 32 4 24.5v-15Z"/><path class="brand-trace" d="M20.5 10v9.5a4 4 0 0 1-4 4H13"/><circle class="brand-node" cx="20.5" cy="10" r="2"/><circle class="brand-live" cx="12" cy="23.5" r="1.7"/></svg>
+        <span class="brand-word">JARVIS</span>
+        <span class="brand-sub">/ Career agent</span>
+      </a>
+      <nav class="site-nav" aria-label="Documentation">
+        <a href="{{ '/privacy/' | relative_url }}"{% if page.url == '/privacy/' %} aria-current="page"{% endif %}>Privacy</a>
+        <a href="{{ '/terms/' | relative_url }}"{% if page.url == '/terms/' %} aria-current="page"{% endif %}>Terms</a>
+      </nav>
+    </header>
+    {%- comment -%} Long pages get a table of contents built from kramdown's h2 ids; page text is untouched. {%- endcomment -%}
+    {%- assign sections = content | split: '<h2 id="' -%}
+    {%- assign has_toc = false -%}
+    {%- if sections.size > 3 -%}{%- assign has_toc = true -%}{%- endif %}
+    <div class="page{% if has_toc %} has-toc{% endif %}">
+      {%- if has_toc %}
+      <nav class="toc" aria-label="On this page">
+        <p class="toc-label">On this page</p>
+        <ol>
+          {%- for section in sections offset: 1 -%}
+          {%- assign section_id = section | split: '"' | first -%}
+          {%- assign section_title = section | split: '</h2>' | first | split: '">' | last %}
+          <li><a href="#{{ section_id }}">{{ section_title }}</a></li>
+          {%- endfor %}
+        </ol>
+      </nav>
+      {%- endif %}
+      <main id="content" class="doc" tabindex="-1">
+        <p class="doc-kicker">Public documentation</p>
+        {{ content }}
+      </main>
+    </div>
+    <footer class="site-foot"><a href="{{ '/privacy/' | relative_url }}">Privacy Policy</a> · <a href="{{ '/terms/' | relative_url }}">Terms of Service</a> · The Meredith Collective</footer>
   </body>
 </html>
