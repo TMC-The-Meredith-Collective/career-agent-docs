@@ -32,6 +32,7 @@ The site uses the dark JARVIS look shared with the Career Command Center: `_layo
 
 - Fonts are self-hosted in `assets/fonts/` (Space Grotesk and DM Mono, Latin subsets, SIL Open Font License; license texts sit beside the files). Pages make no third-party requests, and `_headers` allows styles and fonts from this origin only (`style-src 'self'; font-src 'self'`). Do not add inline `<style>` blocks or `style` attributes; the policy blocks them.
 - The site loads no scripts.
+- Color roles match the Career Command Center: iris marks links, navigation, and focus, and NVIDIA green (`--telemetry`) marks the telemetry layer: the kicker and `//` section markers, the contents label, the metadata strip, and list markers.
 - Do not add the JARVIS agent portraits here. They are game art and stay in the private application only.
 
 ## Maintenance
