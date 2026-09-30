@@ -6,7 +6,7 @@ Public documentation only. The private application code and career data are main
 - Canonical privacy policy: https://career-agent.tmcsolutions-org.net/privacy/
 - Terms of service: https://career-agent.tmcsolutions-org.net/terms/
 - Policy source of truth: `privacy.md`
-- Publishing: Cloudflare Workers (static assets) from `main`, built by Workers Builds (settings below). The previous GitHub Pages copy at https://tmc-the-meredith-collective.github.io/career-agent-docs/ stays up until every registration (Google OAuth consent screen, LinkedIn app if any) points at the canonical domain; then it is retired.
+- Publishing: Cloudflare Workers (static assets) from `main`, built by Workers Builds (settings below). The previous GitHub Pages copy was retired on 2026-09-28 after the Google OAuth consent screen was verified against the canonical domain.
 
 ## Cloudflare Workers build settings
 
@@ -19,10 +19,10 @@ The Worker is defined by `wrangler.jsonc` (name, static assets directory `_site`
 | Build command | `bundle install && bundle exec jekyll build --config _config.yml,_config.cloudflare.yml` |
 | Deploy command | `npx wrangler deploy` (default) |
 | Preview command | `npx wrangler preview` (default) |
-| Build variable | `LC_ALL` = `C.UTF-8` (without a UTF-8 locale Ruby defaults to US-ASCII and Sass fails on the theme stylesheet). Do not set `RUBY_VERSION`; the image's preinstalled Ruby 3.4 is used and the Gemfile adds the gems Jekyll 3 needs there. |
+| Build variable | `LC_ALL` = `C.UTF-8` (without a UTF-8 locale Ruby defaults to US-ASCII and Sass fails on the theme stylesheet). Set it in **both** scopes of the Builds section, **Production** and **Previews Base**; branch (pull request) builds read the Previews Base set. Do not set `RUBY_VERSION` in either; the image's preinstalled Ruby 3.4 is used and the Gemfile adds the gems Jekyll 3 needs there. |
 | Custom domain | `career-agent.tmcsolutions-org.net` (Worker **Settings** > **Domains & Routes**) |
 
-`_headers` is copied into `_site` by `_config.cloudflare.yml` and supplies the security headers on every response.
+`_headers` is copied into `_site` by `_config.cloudflare.yml` and supplies the security headers on every response. `assets/css/style.scss` is an empty override of the github-pages theme stylesheet: the layout inlines its styles, and the override keeps Sass from reading the theme's non-ASCII source, so the build no longer depends on the locale.
 
 Do not enable Cloudflare Web Analytics on this project. The privacy policy states that this site adds no analytics scripts.
 
