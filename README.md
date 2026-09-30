@@ -22,7 +22,7 @@ The Worker is defined by `wrangler.jsonc` (name, static assets directory `_site`
 | Build variable | `LC_ALL` = `C.UTF-8` (without a UTF-8 locale Ruby defaults to US-ASCII and Sass fails on the theme stylesheet). Set it in **both** scopes of the Builds section, **Production** and **Previews Base**; branch (pull request) builds read the Previews Base set. Do not set `RUBY_VERSION` in either; the image's preinstalled Ruby 3.4 is used and the Gemfile adds the gems Jekyll 3 needs there. |
 | Custom domain | `career-agent.tmcsolutions-org.net` (Worker **Settings** > **Domains & Routes**) |
 
-`_headers` is copied into `_site` by `_config.cloudflare.yml` and supplies the security headers on every response.
+`_headers` is copied into `_site` by `_config.cloudflare.yml` and supplies the security headers on every response. `assets/css/style.scss` is an empty override of the github-pages theme stylesheet: the layout inlines its styles, and the override keeps Sass from reading the theme's non-ASCII source, so the build no longer depends on the locale.
 
 Do not enable Cloudflare Web Analytics on this project. The privacy policy states that this site adds no analytics scripts.
 
