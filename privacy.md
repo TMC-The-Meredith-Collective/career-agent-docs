@@ -6,7 +6,7 @@ permalink: /privacy/
 
 # JARVIS Career Agent Privacy Policy
 
-**Effective date:** September 27, 2026
+**Effective date:** September 30, 2026
 
 **Operator:** David Russell Meredith — The Meredith Collective
 
@@ -18,13 +18,29 @@ permalink: /privacy/
 
 JARVIS Career Agent is a private, single-owner career-management application intended to help its owner find steady employment and income. It organizes career evidence, job postings, resumes, applications, and follow-up activity. It is not offered for public registration or use by other people.
 
-The application is still being provisioned. LinkedIn sign-in, Google Gmail, Calendar, and Drive integration, and AI-assisted resume tailoring are intended for the initial release. This notice describes implemented data paths and clearly identifies planned functionality; publishing it does not mean the application or every integration is operational. Databricks application permissions, not LinkedIn sign-in, are intended to restrict access to the owner.
+The application is still being provisioned. LinkedIn sign-in, Google Gmail, Calendar, and Drive integration, AI-assisted resume tailoring, and synchronization of public job postings are intended for the initial release. This notice describes implemented data paths and clearly identifies planned functionality; publishing it does not mean the application or every integration is operational. Databricks application permissions, not LinkedIn sign-in, are intended to restrict access to the owner.
 
 ## Career information
 
 The application processes owner-supplied employment history, education, certifications, skills, and other career evidence. Job-tracking records can contain company and role names, job URLs, locations, compensation ranges, application statuses, dates, and private notes.
 
-The configured database stores postings, application records, resume-version metadata, match scores, gap analyses, and application activity. Generated resume text is returned to the browser. Saving a separate resume file depends on the storage integration. These records support the owner's career preparation and application tracking, not advertising or data brokerage.
+The configured database stores postings, application records, resume-version metadata, match scores, gap analyses, application activity, and job-posting synchronization records. Generated resume text is returned to the browser. Saving a separate resume file depends on the storage integration. These records support the owner's career preparation and application tracking, not advertising or data brokerage.
+
+## Job-posting sources
+
+Job-posting synchronization is implemented and tested but, as of this version, is not yet enabled in the deployed application. When the owner enables it, the application requests public job listings from three sources: AI Dev Jobs (`aidevboard.com`), The Muse (`www.themuse.com`), and USAJOBS (`data.usajobs.gov`, operated by the U.S. Office of Personnel Management). It contacts no other job board. Indeed and ZipRecruiter appear in its configuration as disabled and are never called.
+
+A synchronization runs when the owner starts one. A scheduled hourly run is planned and not yet set up. Requests originate from the deployed application or from the owner's computer, so each source receives that system's IP address and ordinary request metadata. A reachability check sends each source one request with no key and no search criteria.
+
+Each synchronization request carries search criteria only. Depending on the source, these are job-title keywords, a metropolitan area with a radius, place or state names, a remote-work preference, a seniority level, and job categories. No career evidence, resume text, application record, or private note is sent to a job source. USAJOBS requires an API key and the email address registered with it, and the application sends that email address as the `User-Agent` header on every USAJOBS search request. AI Dev Jobs and The Muse work without a key; the application sends either of them an API key only when the owner has configured one.
+
+From each listing the application stores the title, employer, location, work arrangement, seniority, pay range, category, employment type, description as plain text, listing and application links, and posting and closing dates. Descriptions are third-party text and can name people or include contact details the employer chose to publish. For USAJOBS only, the application also keeps the source's original record, which can include the hiring agency's published contact email address and telephone number. It does not keep the original record from AI Dev Jobs or The Muse.
+
+The application records each synchronization run: the source, start and finish times, outcome, item counts, and a short error description. The application's own request logs name the host, path, status, and timing; they do not include query strings, keys, or the registered email address. This is not a guarantee about provider diagnostic logs.
+
+Synchronized postings are updated when a source changes them and are marked as likely closed after their closing date or when no synchronization has seen them for 14 days. The application does not delete them automatically; they remain until the operator removes them. Stored descriptions are shown to the owner and, when the owner requests tailoring for a posting, are sent to Anthropic as described below.
+
+Each source's own terms and privacy policy govern how it handles these requests.
 
 ## LinkedIn sign-in
 
@@ -50,7 +66,7 @@ Any enabled use of Google API data, including transfers, must follow the [Google
 
 ## AI-assisted resume tailoring
 
-When the owner requests tailoring and the feature is configured, selected posting fields and career evidence are sent to Anthropic's API. The evidence includes relevant experience, education, certifications, and skills. Anthropic returns resume text, a match score, keyword analysis, and suggested certifications. These inputs can contain personal information such as employment history.
+When the owner requests tailoring and the feature is configured, selected posting fields and career evidence are sent to Anthropic's API. The posting fields include the stored description, limited to 12,000 characters, whether the owner entered it or a job source supplied it. The evidence includes relevant experience, education, certifications, and skills. Anthropic returns resume text, a match score, keyword analysis, and suggested certifications. These inputs can contain personal information such as employment history.
 
 The implemented tailoring path does not read `applications.notes`, LinkedIn session identity, or Gmail/Calendar activity as prompt inputs. This field separation does not remove sensitive information independently placed in career evidence or other AI inputs. The owner should submit only information they are willing and authorized to provide for AI processing.
 
@@ -62,6 +78,7 @@ Outputs require human review. The reviewed tailoring route does not automaticall
 - **LinkedIn:** authentication, consent, and the identity response described above.
 - **Google:** authorized Gmail, Calendar, and Drive operations when enabled.
 - **Anthropic:** the AI processing described above when requested and configured.
+- **AI Dev Jobs, The Muse, and USAJOBS (U.S. Office of Personnel Management):** public job listings returned for the search requests described above, when job-posting synchronization is enabled. USAJOBS also receives the owner's registered email address with each search request.
 - **Cloudflare:** hosting this public documentation site on Cloudflare Workers. Cloudflare processes visitors' IP addresses and request metadata to deliver and protect the site, as described in its [privacy policy](https://www.cloudflare.com/privacypolicy/). This site contains public policy documentation, not private career records or application credentials.
 - **GitHub:** hosting the documentation source repository.
 
