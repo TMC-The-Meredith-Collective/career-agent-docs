@@ -8,6 +8,10 @@ permalink: /privacy/
 
 **Effective date:** September 30, 2026
 
+**Release notice:** The resume storage, analytics, Drive save, and archive changes
+below describe the reviewed release candidate. They require approval, schema
+provisioning, and deployment before becoming available in the live application.
+
 **Operator:** David Russell Meredith — The Meredith Collective
 
 **Location:** DTC, Colorado, United States
@@ -24,7 +28,7 @@ The application is still being provisioned. LinkedIn sign-in, Google Gmail, Cale
 
 The application processes owner-supplied employment history, education, certifications, skills, and other career evidence. Job-tracking records can contain company and role names, job URLs, locations, compensation ranges, application statuses, dates, and private notes.
 
-The configured database stores postings, application records, resume-version metadata, match scores, gap analyses, application activity, and job-posting synchronization records. Generated resume text is returned to the browser. Saving a separate resume file depends on the storage integration. These records support the owner's career preparation and application tracking, not advertising or data brokerage.
+The configured database stores postings, application records, resume-version metadata, match scores, gap analyses, application activity, and job-posting synchronization records. The release candidate also stores generated resume text privately in Lakebase so the owner can reopen and download a draft. Application list responses omit this text. A separate, explicit Drive save can store a text file and its file identifier after Google authorization is configured. These records support the owner's career preparation and application tracking, not advertising or data brokerage. Legacy drafts with no stored text require re-tailoring.
 
 ## Job-posting sources
 
@@ -54,13 +58,13 @@ Identity is retrieved during sign-in, not by scheduled background refresh. This 
 
 ## Google integrations
 
-Gmail, Calendar, and Drive are core requirements, not merely optional future enhancements. Durable Google authorization, token refresh, and the production Drive writer are not yet complete. They must be implemented and verified before the owner relies on them for ongoing use.
+Gmail, Calendar, and Drive are core requirements, not merely optional future enhancements. The app renews access tokens server-side before each synchronization. The release candidate implements bounded retrieval and an explicit Drive writer. Ongoing access still depends on a valid OAuth client, fresh owner consent, and live verification; the current Google configuration requires reconnection before use. Tokens are not stored in browser cookies or sent to Anthropic.
 
 When configured and invoked, the existing Gmail/Calendar synchronization code requests recent Gmail message metadata and upcoming primary-calendar events. It can process message identifiers, sender headers, subjects, timestamps, snippets returned by Gmail, event titles, and attendee email addresses to match activity to applications. Matching occurs after retrieval; the initial retrieval is not restricted to known recruiters. Matched subjects or event titles, source identifiers, and timestamps can be stored as application activity in Lakebase.
 
 The reviewed Gmail path does not request full message bodies or attachments, although the intended `gmail.readonly` authorization permits broader reading than these requests. Calendar access is intended to be read-only. These paths do not send emails or change calendar events, and their implemented matching logic does not call an AI model.
 
-The planned Drive integration will save generated resume artifacts in the owner's selected folder and retain file identifiers with resume-version records. The current route exposes a writer extension point, not a verified production Drive implementation. Only permissions necessary for the implemented feature will be requested; exact access and any additional data flows will be disclosed before authorization.
+After separate authorization, the release candidate's Save to Drive button sends the selected generated resume as a plain-text file to the owner's configured private folder. It requests the limited `drive.file` scope for files created by or explicitly shared with the OAuth app; an existing folder identifier alone does not grant access. This transfers the resume, including its verified contact header, to Google. The app stores the returned file identifier and reuses it on repeated saves. It does not change sharing permissions, send the file to an employer, or delete Drive files automatically. If Google creates a file but the database cannot record its identifier, the owner must reconcile the file before retrying. The Lakebase draft and download remain available if Drive fails.
 
 Any enabled use of Google API data, including transfers, must follow the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including its Limited Use requirements. Google data will be used for the disclosed owner-facing features, not advertising, data brokerage, or training generalized AI models. Additional access or use requires policy review and any required consent before activation. This is an operating commitment, not a claim of Google approval or a completed security assessment.
 
@@ -71,6 +75,24 @@ When the owner requests tailoring and the feature is configured, selected postin
 The implemented tailoring path does not read `applications.notes`, LinkedIn session identity, or Gmail/Calendar activity as prompt inputs. This field separation does not remove sensitive information independently placed in career evidence or other AI inputs. The owner should submit only information they are willing and authorized to provide for AI processing.
 
 Outputs require human review. The reviewed tailoring route does not automatically submit applications or send resumes to employers. Anthropic's applicable service terms and account settings govern its handling of API inputs and outputs; this policy does not promise zero provider retention or a particular processing country. No assertion is made that the operator has a special zero-retention agreement.
+
+The release candidate adds the verified name and contact header locally after the
+model returns a draft. That header is not an input to the tailoring model. Other
+personal information independently present in career evidence can still be sent
+as described above.
+
+## AI-assisted application analytics
+
+When the owner uses Ask Keener in the release candidate, the question and an
+approved database schema are sent to Anthropic to produce a read-only query. The
+server checks effective database permissions before this call, runs the query
+under a restricted PostgreSQL role with a timeout and row limit, and sends only
+approved operational or aggregate result fields to Anthropic for explanation.
+These fields can include employer/role names, application stages and dates,
+counts, and evidence-match scores. Private notes, activity summaries, resume text,
+original job-source records, and archive contents are excluded from this path.
+The owner's question is an AI input; do not include sensitive information that
+the owner does not intend to send to Anthropic. Answers require human review.
 
 ## Providers and access
 
@@ -90,6 +112,11 @@ Provider processing locations, service logs, and backups are governed by applica
 
 The application uses a signed session cookie for LinkedIn OAuth state and the connected identifier and name. A signature protects against undetected modification; it does not encrypt the cookie's contents. Clearing application cookies removes that browser's stored session but does not revoke provider authorization or delete database records. Browser session restoration can preserve session cookies.
 
+The release candidate expires LinkedIn sign-in state after 10 minutes and consumes
+it before exchanging a code. Its signed identity cookie has an eight-hour lifetime
+and uses Secure, HttpOnly, and SameSite=Lax in production. Databricks authentication
+has separate platform-managed cookies and remains the access boundary.
+
 Databricks and authentication providers can use their own cookies and process connection metadata, requests, errors, and identifiers. Cookie configuration, log content, and provider retention must be checked before deployment; no fixed deletion interval for logs or backups is promised by this notice. Additional Unity Catalog telemetry export has not been verified as enabled. This documentation site does not add advertising trackers or analytics scripts.
 
 ## Retention, archives, and deletion
@@ -100,7 +127,19 @@ The owner has adopted these requirements for owner-managed career records:
 - **Archives:** remain until the owner explicitly approves deletion, without a fixed automatic expiry. Archives remain personal information; compression is not deletion or anonymization.
 - **Master career evidence:** employment history, education, and certifications remain active indefinitely, separate from the one-year application-record schedule.
 
-The archival schedule is not yet automated in the reviewed application. Records currently remain until the operator acts on them. Closure-date tracking, archival, and deletion procedures still require implementation and verification. There is no claim that a scheduled process already archives or erases data.
+The release candidate tracks closure when an application enters Rejected or
+Withdrawn. Switching between those stages preserves its closure date; reopening
+clears it. A legacy record with an unknown closure date is skipped until the owner
+supplies a verified date. The owner explicitly runs Archive eligible records;
+each run handles up to 100 records at or beyond one calendar year after closure.
+A February 29 closure reaches its anniversary on February 28 in the following
+non-leap year. Archiving removes records from the active pipeline, stores a
+compressed private snapshot and checksum, and preserves the original application,
+resume, notes, and events. Restoring checks snapshot integrity and reopens the
+application as Applied; historical snapshots remain. There is no background
+archive schedule or deletion endpoint. Records and snapshots remain until the
+operator takes an approved action. Compression does not remove provider data or
+override deletion obligations.
 
 David Russell Meredith (Russ Meredith / Russypher) is responsible for administration and privacy requests. J.A.R.V.I.S. may assist with authorized administration, but every deletion by J.A.R.V.I.S. requires the owner's explicit permission. Permission to archive or compress is not permission to destroy source records. J.A.R.V.I.S. is not a separate legal operator, and this policy itself grants no technical privileges.
 
