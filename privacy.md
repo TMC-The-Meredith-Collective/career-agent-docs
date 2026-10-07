@@ -6,7 +6,7 @@ permalink: /privacy/
 
 # JARVIS Career Agent Privacy Policy
 
-**Effective date:** September 30, 2026
+**Effective date:** October 6, 2026
 
 **Release notice:** The resume storage, analytics, Drive save, and archive changes
 below describe the reviewed release candidate. They require approval, schema
