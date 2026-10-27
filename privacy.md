@@ -6,11 +6,14 @@ permalink: /privacy/
 
 # JARVIS Career Agent Privacy Policy
 
-**Effective date:** October 6, 2026
+**Effective date:** October 27, 2026
 
 **Release notice:** The resume storage, analytics, Drive save, and archive changes
 below describe the reviewed release candidate. They require approval, schema
 provisioning, and deployment before becoming available in the live application.
+The recovery candidate adds incremental Google synchronization, career guidance,
+and private evidence browsing. This notice describes those data paths; it does
+not establish that their live acceptance checks or a monitoring soak have passed.
 
 **Operator:** David Russell Meredith — The Meredith Collective
 
@@ -22,19 +25,25 @@ provisioning, and deployment before becoming available in the live application.
 
 JARVIS Career Agent is a private, single-owner career-management application intended to help its owner find steady employment and income. It organizes career evidence, job postings, resumes, applications, and follow-up activity. It is not offered for public registration or use by other people.
 
-The application is still being provisioned. LinkedIn sign-in, Google Gmail, Calendar, and Drive integration, AI-assisted resume tailoring, and synchronization of public job postings are intended for the initial release. This notice describes implemented data paths and clearly identifies planned functionality; publishing it does not mean the application or every integration is operational. Databricks application permissions, not LinkedIn sign-in, are intended to restrict access to the owner.
+The application and its integrations are operated and verified in stages. This notice describes implemented data paths and identifies candidate functionality; publishing it or deploying the app does not establish that every integration is operational. Databricks application permissions, not LinkedIn sign-in, restrict access to the owner and authorized platform administrators.
 
 ## Career information
 
 The application processes owner-supplied employment history, education, certifications, skills, and other career evidence. Job-tracking records can contain company and role names, job URLs, locations, compensation ranges, application statuses, dates, and private notes.
 
+The recovery candidate's private Evidence view displays career records, their
+categories, source YAML paths, and relevance tags. It excludes the separate
+master identity/contact document. Databricks application permissions remain the
+access boundary; the endpoint asks browsers not to cache its response. This is
+YAML-backed evidence browsing, not general document-upload processing.
+
 The configured database stores postings, application records, resume-version metadata, match scores, gap analyses, application activity, and job-posting synchronization records. The release candidate also stores generated resume text privately in Lakebase so the owner can reopen and download a draft. Application list responses omit this text. A separate, explicit Drive save can store a text file and its file identifier after Google authorization is configured. These records support the owner's career preparation and application tracking, not advertising or data brokerage. Legacy drafts with no stored text require re-tailoring.
 
 ## Job-posting sources
 
-Job-posting synchronization is implemented and tested but, as of this version, is not yet enabled in the deployed application. When the owner enables it, the application requests public job listings from three sources: AI Dev Jobs (`aidevboard.com`), The Muse (`www.themuse.com`), and USAJOBS (`data.usajobs.gov`, operated by the U.S. Office of Personnel Management). It contacts no other job board. Indeed and ZipRecruiter appear in its configuration as disabled and are never called.
+When enabled, the application's public-source synchronization requests job listings from three sources: AI Dev Jobs (`aidevboard.com`), The Muse (`www.themuse.com`), and USAJOBS (`data.usajobs.gov`, operated by the U.S. Office of Personnel Management). This connector path contacts no other job board. Indeed and ZipRecruiter appear in its configuration as disabled and are never called.
 
-A synchronization runs when the owner starts one. A scheduled hourly run is planned and not yet set up. Requests originate from the deployed application or from the owner's computer, so each source receives that system's IP address and ordinary request metadata. A reachability check sends each source one request with no key and no search criteria.
+A synchronization runs when the owner starts one or through an explicitly configured host schedule. This notice does not activate a schedule or establish its current health. Requests originate from the deployed application or from the owner's computer, so each source receives that system's IP address and ordinary request metadata. A reachability check sends each source one request with no key and no search criteria.
 
 Each synchronization request carries search criteria only. Depending on the source, these are job-title keywords, a metropolitan area with a radius, place or state names, a remote-work preference, a seniority level, and job categories. No career evidence, resume text, application record, or private note is sent to a job source. USAJOBS requires an API key and the email address registered with it, and the application sends that email address as the `User-Agent` header on every USAJOBS search request. AI Dev Jobs and The Muse work without a key; the application sends either of them an API key only when the owner has configured one.
 
@@ -45,6 +54,16 @@ The application records each synchronization run: the source, start and finish t
 Synchronized postings are updated when a source changes them and are marked as likely closed after their closing date or when no synchronization has seen them for 14 days. The application does not delete them automatically; they remain until the operator removes them. Stored descriptions are shown to the owner and, when the owner requests tailoring for a posting, are sent to Anthropic as described below.
 
 Each source's own terms and privacy policy govern how it handles these requests.
+
+Separately from the app's public-source connectors, an owner-operated LinkedIn
+pipeline reads Saved jobs, recommendations, and configured searches through a
+dedicated authenticated browser profile. It retains that profile locally and
+buffers account-scoped job observations in a local SQLite outbox before delivery
+to Lakebase. LinkedIn receives the configured search criteria and ordinary
+browser request metadata for this collection. It does not submit applications, change LinkedIn saved membership,
+or read messages. This collection is separate from the LinkedIn sign-in API
+described below. Authentication challenges or unverified filters stop affected
+collection; a successful session check alone does not prove complete coverage.
 
 ## LinkedIn sign-in
 
@@ -58,11 +77,17 @@ Identity is retrieved during sign-in, not by scheduled background refresh. This 
 
 ## Google integrations
 
-Gmail, Calendar, and Drive are core requirements, not merely optional future enhancements. The app renews access tokens server-side before each synchronization. The release candidate implements bounded retrieval and an explicit Drive writer. Ongoing access still depends on a valid OAuth client, fresh owner consent, and live verification; the current Google configuration requires reconnection before use. Tokens are not stored in browser cookies or sent to Anthropic.
+Gmail, Calendar, and Drive are core requirements, not merely optional future enhancements. The app renews access tokens server-side before each synchronization. The release candidate implements bounded retrieval and an explicit Drive writer. Ongoing access depends on a valid OAuth client, applicable owner consent, and live verification; consent may need renewal if authorization expires or is revoked. Tokens are not stored in browser cookies or sent to Anthropic.
 
 When configured and invoked, the existing Gmail/Calendar synchronization code requests recent Gmail message metadata and upcoming primary-calendar events. It can process message identifiers, sender headers, subjects, timestamps, snippets returned by Gmail, event titles, and attendee email addresses to match activity to applications. Matching occurs after retrieval; the initial retrieval is not restricted to known recruiters. Matched subjects or event titles, source identifiers, and timestamps can be stored as application activity in Lakebase.
 
 The reviewed Gmail path does not request full message bodies or attachments, although the intended `gmail.readonly` authorization permits broader reading than these requests. Calendar access is intended to be read-only. These paths do not send emails or change calendar events, and their implemented matching logic does not call an AI model.
+
+The recovery candidate processes bounded batches and uses signed, query-bound
+continuation tokens to resume a larger synchronization. Tokens contain the
+window and provider pagination state and expire after one hour. The interface
+distinguishes partial progress from completion and allows an explicit retry;
+it does not add an inbox listener or send Google content to career guidance.
 
 After separate authorization, the release candidate's Save to Drive button sends the selected generated resume as a plain-text file to the owner's configured private folder. It requests the limited `drive.file` scope for files created by or explicitly shared with the OAuth app; an existing folder identifier alone does not grant access. This transfers the resume, including its verified contact header, to Google. The app stores the returned file identifier and reuses it on repeated saves. It does not change sharing permissions, send the file to an employer, or delete Drive files automatically. If Google creates a file but the database cannot record its identifier, the owner must reconcile the file before retrying. The Lakebase draft and download remain available if Drive fails.
 
@@ -70,7 +95,7 @@ Any enabled use of Google API data, including transfers, must follow the [Google
 
 ## AI-assisted resume tailoring
 
-When the owner requests tailoring and the feature is configured, selected posting fields and career evidence are sent to Anthropic's API. The posting fields include the stored description, limited to 12,000 characters, whether the owner entered it or a job source supplied it. The evidence includes relevant experience, education, certifications, and skills. Anthropic returns resume text, a match score, keyword analysis, and suggested certifications. These inputs can contain personal information such as employment history.
+When the owner requests tailoring and the feature is configured, selected posting fields and career evidence are sent to Anthropic's API. The posting fields include the stored description, limited to 12,000 characters, whether the owner entered it or a job source supplied it. The evidence includes relevant experience, education, certifications, skills, projects, and achievements. Anthropic returns resume text, a match score, keyword analysis, and suggested certifications. These inputs can contain personal information such as employment history.
 
 The implemented tailoring path does not read `applications.notes`, LinkedIn session identity, or Gmail/Calendar activity as prompt inputs. This field separation does not remove sensitive information independently placed in career evidence or other AI inputs. The owner should submit only information they are willing and authorized to provide for AI processing.
 
@@ -83,7 +108,7 @@ as described above.
 
 ## AI-assisted application analytics
 
-When the owner uses Ask Keener in the release candidate, the question and an
+When the owner selects Ask Keener's Pipeline analytics mode, the question and an
 approved database schema are sent to Anthropic to produce a read-only query. The
 server checks effective database permissions before this call, runs the query
 under a restricted PostgreSQL role with a timeout and row limit, and sends only
@@ -94,12 +119,45 @@ original job-source records, and archive contents are excluded from this path.
 The owner's question is an AI input; do not include sensitive information that
 the owner does not intend to send to Anthropic. Answers require human review.
 
+## AI-assisted career guidance
+
+The recovery candidate adds a separate Career guidance mode to Ask Keener. On
+the owner's request, it sends the question and ranked, bounded excerpts from
+career evidence to the existing Anthropic API. It excludes the master
+identity/contact document and does not query application notes, stored resumes,
+Gmail, or Calendar for this mode. Personal information independently included in
+the question or career records can still reach Anthropic.
+
+Guidance does not execute analytics SQL, submit applications, or contact
+employers. The server checks that returned source references identify supplied
+records; that check does not prove that every claim is accurate or supported.
+The owner should review the answer and cited evidence. The same provider terms
+and retention limitations described for tailoring apply.
+
+## Operational alerts
+
+The owner can designate an email destination for pipeline incidents, recovery,
+and the final result of a finite monitoring window. The configured Codex
+scheduled relay reads operational status and uses the owner's connected Gmail
+account to send concise alerts. This is separate from the Career Agent's
+read-only Gmail reconciliation. Alerts should contain operational summaries,
+not career records, message content, browser credentials, or secrets. A local
+ledger records event identifiers and delivery acknowledgements to suppress
+repeat incidents. Sending, recipient receipt, and unattended delivery are
+separate verification steps; local relay operation requires the host and Codex
+app to remain available.
+
 ## Providers and access
 
 - **Databricks and its infrastructure providers:** hosting, workspace authentication, Lakebase database storage, and operational services. Authorized platform administrators may have access under the configured permissions.
-- **LinkedIn:** authentication, consent, and the identity response described above.
+- **LinkedIn:** authentication, consent, the identity response, and the separate
+  owner-operated job-collection browser requests described above.
 - **Google:** authorized Gmail, Calendar, and Drive operations when enabled.
 - **Anthropic:** the AI processing described above when requested and configured.
+- **OpenAI / Codex:** the scheduled operational alert relay receives selected
+  status metadata to identify incidents and compose alerts through the owner's
+  connected Gmail account. Its account settings and applicable provider terms
+  govern that processing; no zero-retention promise is made here.
 - **AI Dev Jobs, The Muse, and USAJOBS (U.S. Office of Personnel Management):** public job listings returned for the search requests described above, when job-posting synchronization is enabled. USAJOBS also receives the owner's registered email address with each search request.
 - **Cloudflare:** hosting this public documentation site on Cloudflare Workers. Cloudflare processes visitors' IP addresses and request metadata to deliver and protect the site, as described in its [privacy policy](https://www.cloudflare.com/privacypolicy/). This site contains public policy documentation, not private career records or application credentials.
 - **GitHub:** hosting the documentation source repository.
